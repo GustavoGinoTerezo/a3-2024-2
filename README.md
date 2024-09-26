@@ -1,4 +1,4 @@
-# 📚 Projetos do Semestre - Faculdade de Computação
+# 📚 Projetos do Segundo Semestre de 2024
 
 Bem-vindo ao repositório dos projetos desenvolvidos durante este semestre! Aqui, você encontrará dois grandes trabalhos que combinam tecnologia, criatividade e ciência da computação. 🚀
 
