@@ -6,7 +6,7 @@ const source = `
 bloco
 	declarar memo = {}
 
-	funcao fibonacci(n)
+	fibonacci(n)
 		se memo[n] faca
 			retorna memo[n]
 		fim
