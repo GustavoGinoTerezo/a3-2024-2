@@ -20,7 +20,7 @@ O objetivo central é ajudar **idosos** a se sentirem mais confortáveis no uso 
 - Interação intuitiva em ambientes virtuais que ajudam no aprendizado digital.
 - Simulações de cenários práticos, como tutoriais em realidade virtual.
 
-### 🔗 [Repositório do Projeto](#)
+### 🔗 [https://github.com/GustavoGinoTerezo/a3-2024-2/tree/main/computacao-grafica-e-realidade-virtual](#)
 
 ---
 
@@ -42,7 +42,7 @@ Criar um compilador que analisa e traduz um subconjunto de uma linguagem de prog
 - **Análise Semântica**: Validação de tipos, escopos e regras de semântica.
 - **Geração de Código**: Conversão de código para uma linguagem intermediária ou código de máquina.
 
-### 🔗 [Repositório do Projeto](#)
+### 🔗 [https://github.com/GustavoGinoTerezo/a3-2024-2/tree/main/teoria-da-computacao-e-compiladores](#)
 
 ---
 
