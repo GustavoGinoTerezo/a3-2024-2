@@ -1,4 +1,4 @@
-# 🌟 Projeto 1: Inclusão Digital para Idosos
+# 🌟 Projeto: Inclusão Digital para Idosos
 
 ## 🔎 Descrição
 Este projeto tem como objetivo principal promover a inclusão digital de idosos através de uma abordagem interativa e acessível. Utilizando conceitos de Computação Gráfica, estamos desenvolvendo avatares digitais personalizados e amigáveis para facilitar a interação dos idosos com ambientes virtuais e tornar a experiência digital mais intuitiva e acolhedora.
