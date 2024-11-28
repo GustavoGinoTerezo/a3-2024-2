@@ -1,4 +1,0 @@
-bloco
-	declarar x = Log.Leia("Digite seu nome:")
-	Log.Escreva(x)
-fim
