@@ -1,8 +1,7 @@
-import * as Nodes from "../parser/Nodes";
-import * as LinkedList from "../utilities/LinkedList";
-
 import * as Context from "./Context";
 import * as Exceptions from "./Exceptions";
+import * as LinkedList from "../utilities/LinkedList";
+import * as Nodes from "../parser/Nodes";
 
 export interface IteratorResult {
 	index: BaseValue | null;

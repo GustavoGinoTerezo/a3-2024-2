@@ -1,8 +1,7 @@
-import * as Nodes from "../parser/Nodes";
-
-import * as Exceptions from "./Exceptions";
-import * as Value from "./Value";
 import * as Context from "./Context";
+import * as Exceptions from "./Exceptions";
+import * as Nodes from "../parser/Nodes";
+import * as Value from "./Value";
 
 import { BuiltIns } from "../commons/BuiltIns";
 
@@ -29,7 +28,7 @@ class Compiler {
 	public context!: Context.Context;
 
 	constructor(private readonly program: Nodes.Node[]) {
-		this.context = new Context.Context(null, new BuiltIns(this.context).load());
+		this.context = new Context.Context(null, new BuiltIns(this).load());
 	}
 
 	/**
@@ -124,7 +123,6 @@ class Compiler {
 	 * @param factor
 	 * @returns
 	 */
-
 	private *visitFactor(factor: Nodes.NodeFactorTypeUnion): Generator<void | Value.BaseValue> {
 		switch (factor.type) {
 			case Nodes.NodeType.UnaryNot:
@@ -181,7 +179,9 @@ class Compiler {
 			}
 
 			case Nodes.NodeType.AnonymousFunctionDeclarationStmt: {
-				return yield* this.visitAnonymousFunctionDeclarationStmt(factor as Nodes.NodeAnonymousFunctionDeclarationStmt);
+				return yield* this.visitAnonymousFunctionDeclarationStmt(
+					factor as Nodes.NodeAnonymousFunctionDeclarationStmt,
+				);
 			}
 
 			default:
@@ -194,7 +194,6 @@ class Compiler {
 	 * @param term
 	 * @returns
 	 */
-
 	private *visitTerm(term: Nodes.NodeTermTypeUnion): Generator<void | Value.BaseValue> {
 		switch (term.type) {
 			case Nodes.NodeType.BinaryExprMul:
@@ -216,7 +215,6 @@ class Compiler {
 	 * @param expr
 	 * @returns
 	 */
-
 	private *visitExpr(expr: Nodes.NodeExprTypeUnion): Generator<void | Value.BaseValue> {
 		switch (expr.type) {
 			case Nodes.NodeType.BinaryExprAdd:
@@ -235,7 +233,6 @@ class Compiler {
 	 * @param conditional
 	 * @returns
 	 */
-
 	private *visitConditionalExpr(conditional: Nodes.NodeConditionalExprTypeUnion): Generator<void | Value.BaseValue> {
 		switch (conditional.type) {
 			case Nodes.NodeType.BinaryExprEqualTo:
@@ -266,7 +263,6 @@ class Compiler {
 	 * @param logical
 	 * @returns
 	 */
-
 	private *visitLogicalExpr(logical: Nodes.NodeLogicalExprTypeUnion): Generator<void | Value.BaseValue> {
 		switch (logical.type) {
 			case Nodes.NodeType.BinaryExprOr:
@@ -284,7 +280,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitDeclarationStmt(statement: Nodes.NodeDeclarationStmt): Generator<void | Value.BaseValue> {
 		return this.context.define(statement.name, yield* this.visitLogicalExpr(statement.value));
 	}
@@ -293,17 +288,21 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitAssignmentStmt(statement: Nodes.NodeAssignmentStmt): Generator<void | Value.BaseValue> {
 		// Caso a variável seja um identificador, atribua o valor a ela diretamente
 		if (statement.target instanceof Nodes.NodeIdentifier) {
-			return this.context.assign((statement.target as Nodes.NodeIdentifier).name, yield* this.visitLogicalExpr(statement.value));
+			return this.context.assign(
+				(statement.target as Nodes.NodeIdentifier).name,
+				yield* this.visitLogicalExpr(statement.value),
+			);
 		} else {
 			// Obtém a instância do objeto
 			const object = yield* this.visitLogicalExpr((statement.target as Nodes.NodeObjectPropertyAccessor).callee!);
 
 			// Obtém o símbolo e o valor
-			const symbol = (yield* this.visitLogicalExpr((statement.target as Nodes.NodeObjectPropertyAccessor).key)).toString();
+			const symbol = (yield* this.visitLogicalExpr(
+				(statement.target as Nodes.NodeObjectPropertyAccessor).key,
+			)).toString();
 			const value = yield* this.visitLogicalExpr(statement.value);
 
 			// Atribui o valor ao objeto
@@ -318,7 +317,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitBlockStmt(statement: Nodes.NodeBlockStmt): Generator<void | Value.BaseValue> {
 		this.enterScope();
 
@@ -333,7 +331,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitWhileStmt(statement: Nodes.NodeWhileStmt): Generator<void | Value.BaseValue> {
 		while (Value.AS_BOOLEAN(yield* this.visitLogicalExpr(statement.condition))) {
 			// Entra no escopo do loop e então empilha o contexto do loop
@@ -371,7 +368,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitNumericForStmt(statement: Nodes.NodeNumericForStmt): Generator<void | Value.BaseValue> {
 		// Entra no escopo de definição dos parâmetros do loop
 		this.enterScope();
@@ -393,7 +389,10 @@ class Compiler {
 
 		// Caso o valor inicial tenha sido definido, atribua ele a variável
 		if (statement.from !== undefined) {
-			this.context.assign((statement.initializer as Nodes.NodeIdentifier).name, yield* this.visitLogicalExpr(statement.from));
+			this.context.assign(
+				(statement.initializer as Nodes.NodeIdentifier).name,
+				yield* this.visitLogicalExpr(statement.from),
+			);
 		}
 
 		// Enquanto a condição for verdadeira, executa o corpo do loop
@@ -410,7 +409,7 @@ class Compiler {
 						keepGoing = (
 							(yield* BINARY_OP_LT(
 								this.context.get((statement.initializer as Nodes.NodeIdentifier).name)!.value,
-								value
+								value,
 							)) as Value.BooleanValue
 						).value;
 						break;
@@ -471,7 +470,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitIterativeForStmt(statement: Nodes.NodeIterativeForStmt): Generator<void | Value.BaseValue> {
 		if (!Value.IS_OBJECT(yield* this.visitLogicalExpr(statement.iterable))) {
 			throw new Exceptions.UnsupportedOperationError("Attempted to iterate over a non-iterable object.");
@@ -549,8 +547,17 @@ class Compiler {
 	 * @param context
 	 * @returns
 	 */
-	private __generateCodeObject(name: string, parameters: string[], body: Nodes.Node[], context: Context.Context): Value.CodeObject {
-		function* compile(this: Compiler, self: Value.CodeObject, inputs: Value.BaseValue[]): Generator<void | Value.BaseValue> {
+	private __generateCodeObject(
+		name: string,
+		parameters: string[],
+		body: Nodes.Node[],
+		context: Context.Context,
+	): Value.CodeObject {
+		function* compile(
+			this: Compiler,
+			self: Value.CodeObject,
+			inputs: Value.BaseValue[],
+		): Generator<void | Value.BaseValue> {
 			return yield* this.__executeUserFunction(self, inputs);
 		}
 
@@ -561,9 +568,13 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitFunctionDeclarationStmt(statement: Nodes.NodeFunctionDeclarationStmt): Generator<void> {
-		const codeObject = this.__generateCodeObject(statement.name, statement.parameters, statement.body, this.context);
+		const codeObject = this.__generateCodeObject(
+			statement.name,
+			statement.parameters,
+			statement.body,
+			this.context,
+		);
 		return this.context.define(statement.name, codeObject);
 	}
 
@@ -571,15 +582,22 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
-	private *visitAnonymousFunctionDeclarationStmt(statement: Nodes.NodeAnonymousFunctionDeclarationStmt): Generator<void> {
+	private *visitAnonymousFunctionDeclarationStmt(
+		statement: Nodes.NodeAnonymousFunctionDeclarationStmt,
+	): Generator<void> {
 		return this.__generateCodeObject("anonima", statement.parameters, statement.body, this.context);
 	}
 
+	/**
+	 *
+	 */
 	private *visitBreakStmt(): Generator<void> {
 		this.context.getLoopContext().break = true;
 	}
 
+	/**
+	 *
+	 */
 	private *visitContinueStmt(): Generator<void> {
 		this.context.getLoopContext().continue = true;
 	}
@@ -588,7 +606,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitReturnStmt(statement: Nodes.NodeReturnStmt): Generator<void | Value.BaseValue> {
 		const returns: Value.BaseValue[] = [];
 		for (const value of statement.returns) {
@@ -602,7 +619,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitIfStmt(statement: Nodes.NodeIfStmt): Generator<void | Value.BaseValue> {
 		// Testa a condição do if
 		if (Value.AS_BOOLEAN(yield* this.visitLogicalExpr(statement.condition))) {
@@ -626,7 +642,6 @@ class Compiler {
 	 *
 	 * @param statement
 	 */
-
 	private *visitStmt(statement: Nodes.Node): Generator<void | Value.BaseValue> {
 		switch (statement.type) {
 			case Nodes.NodeType.DeclarationStmt:
@@ -675,7 +690,9 @@ class Compiler {
 	 * @param accessor
 	 * @returns
 	 */
-	private *__compileFunctionAccessorInputs(accessor: Nodes.NodeObjectFunctionAccessor): Generator<void | Value.BaseValue> {
+	private *__compileFunctionAccessorInputs(
+		accessor: Nodes.NodeObjectFunctionAccessor,
+	): Generator<void | Value.BaseValue> {
 		// Mapeia os argumentos passados para os parâmetros da função
 		const inputs: Value.BaseValue[] = [];
 		for (const input of accessor.inputs) {
@@ -691,7 +708,10 @@ class Compiler {
 	 * @param statement
 	 * @returns
 	 */
-	private *__executeUserFunction(code: Value.CodeObject, inputs: Value.BaseValue[]): Generator<void | Value.BaseValue> {
+	private *__executeUserFunction(
+		code: Value.CodeObject,
+		inputs: Value.BaseValue[],
+	): Generator<void | Value.BaseValue> {
 		// Salva o contexto atual e então entra no escopo da função
 		const recoveredContext = this.context;
 
@@ -741,7 +761,10 @@ class Compiler {
 	 * @param local
 	 * @param statement
 	 */
-	private *__executeBuiltInFunction(code: Value.BuiltInCodeObject, inputs: Value.BaseValue[]): Generator<void | Value.BaseValue> {
+	private *__executeBuiltInFunction(
+		code: Value.BuiltInCodeObject,
+		inputs: Value.BaseValue[],
+	): Generator<void | Value.BaseValue> {
 		// Executa a função
 		return code.callback(...inputs);
 	}
@@ -750,12 +773,13 @@ class Compiler {
 	 *
 	 * @param node
 	 */
-
 	private *__visitObjectFunctionAccessor(node: Nodes.NodeObjectFunctionAccessor): Generator<void | Value.BaseValue> {
 		let code: Value.CodeObject | Value.BuiltInCodeObject | null;
 
 		if (node.callee instanceof Nodes.NodeIdentifier) {
-			code = this.context.get((node.callee as Nodes.NodeIdentifier).name)?.value as Value.CodeObject | Value.BuiltInCodeObject;
+			code = this.context.get((node.callee as Nodes.NodeIdentifier).name)?.value as
+			| Value.CodeObject
+			| Value.BuiltInCodeObject;
 		} else {
 			code = (yield* this.visitLogicalExpr(node.callee!)) as Value.CodeObject | Value.BuiltInCodeObject;
 		}
@@ -775,7 +799,6 @@ class Compiler {
 	 *
 	 * @param node
 	 */
-
 	private *__visitObjectPropertyAccessor(node: Nodes.NodeObjectPropertyAccessor): Generator<void | Value.BaseValue> {
 		if (node.callee === undefined) {
 			return yield* this.visitLogicalExpr(node.key);
@@ -798,7 +821,6 @@ class Compiler {
 	 * @param node
 	 * @returns
 	 */
-
 	private *visitObjectAccessor(node: Nodes.NodeObjectAccessor): Generator<void | Value.BaseValue> {
 		const accessor = node as Nodes.NodeObjectAccessor;
 		if (accessor instanceof Nodes.NodeObjectFunctionAccessor) {

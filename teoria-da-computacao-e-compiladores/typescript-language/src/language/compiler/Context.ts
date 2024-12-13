@@ -19,6 +19,8 @@ export class FunctionContext {
 }
 
 export class Context {
+	public external: any = {};
+	
 	// Lista de contextos de loops e funções
 	public loopsContext: LoopContext[] = [];
 	public functionsContext: FunctionContext[] = [];

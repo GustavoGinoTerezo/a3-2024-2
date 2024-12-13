@@ -53,3 +53,9 @@ export class ObjectNotIterableError extends Error {
 		super("Object not iterable.");
 	}
 }
+
+export class NotAnObjectError extends Error {
+	constructor() {
+		super("Not an object.");
+	}
+}

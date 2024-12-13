@@ -1,6 +1,7 @@
-import * as Value from "../compiler/Value";
 import * as Context from "../compiler/Context";
+import * as Value from "../compiler/Value";
 
+import { Compiler } from "../compiler/Compiler";
 import { __Console as Console } from "./packages/Console";
 import { __Math as Math } from "./packages/Math";
 import { __Sleep as Sleep } from "./packages/Sleep";
@@ -10,7 +11,7 @@ interface BuiltInFunction {
 }
 
 class BuiltIns {
-	constructor(private readonly context: Context.Context) {}
+	constructor(private readonly compiler: Compiler) {}
 
 	/**
 	 *
@@ -19,7 +20,7 @@ class BuiltIns {
 	 */
 	private wrapInternal(callback: BuiltInFunction): Value.BuiltInCodeObject {
 		return new Value.BuiltInCodeObject((...any: any[]) => {
-			return callback(this.context, ...any);
+			return callback(this.compiler.context, ...any);
 		});
 	}
 
